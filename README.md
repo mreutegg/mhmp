@@ -46,4 +46,7 @@ rendering starts. It's [here](https://www.google.ch/maps/@47.8661649,8.1736558,1
 (yes, that's in Germany). The plugin simply takes the first coordinates and
 starts building at the current location of the player.
 
+And here is how it looks like, standing on top of Säntis, looking south. The
+valley to the left is Rheintal.
+
 ![Säntis](screenshot.png)
