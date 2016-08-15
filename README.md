@@ -37,11 +37,13 @@ and put the DHM200.xyz file into `craftbukkit`.
 Use `localhost` as server address.
 11) Render the height model with:
 ```
-/render DHM200.xyz
+/render DHM200.xyz 200 100 200
 ```
 It will take about 20 minutes to render the full terrain of Switzerland. The
-terrain is scaled down. Each block in Minecraft represents 200x200 meters. In
-case you are wondering where the current location of the player is when the
+terrain is scaled down. Each block in Minecraft represents 200x200 meters with
+a height of 100 meters. This means the example terrain in Minecraft appears
+twice as high as in reality.
+In case you are wondering where the current location of the player is when the
 rendering starts. It's [here](https://www.google.ch/maps/@47.8661649,8.1736558,14z?hl=en)
 (yes, that's in Germany). The plugin simply takes the first coordinates and
 starts building at the current location of the player.

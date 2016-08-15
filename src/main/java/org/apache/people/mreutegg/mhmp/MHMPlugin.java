@@ -16,13 +16,21 @@
  */
 package org.apache.people.mreutegg.mhmp;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.io.PatternFilenameFilter;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.Vector;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.List;
+
+import static com.google.common.collect.Iterables.transform;
 
 public class MHMPlugin extends JavaPlugin {
 
@@ -33,19 +41,61 @@ public class MHMPlugin extends JavaPlugin {
         }
         Player player = (Player) sender;
         if (command.getName().equalsIgnoreCase("render")) {
-            if (args.length != 1) {
+            if (args.length < 1) {
+                sender.sendMessage("You need to specify a .xyz file.");
                 return false;
             }
-            CoordinateReader reader;
+            Iterable<Coordinate> coordinates;
             try {
-                reader = CoordinateReader.fromFile(new File(args[0]));
-            } catch (IOException e) {
+                List<File> files = Lists.newArrayList(new File(".").listFiles(
+                        new PatternFilenameFilter(args[0])));
+                Iterable<Iterable<Coordinate>> allCoords = transform(
+                        files, file -> {
+                            try {
+                                if (file.getName().endsWith(".asc")) {
+                                    return ASCReader.fromFile(file);
+                                } else {
+                                    return CoordinateReader.fromFile(file);
+                                }
+                            } catch (IOException e) {
+                                throw new UncheckedIOException(e);
+                            }
+                        });
+                coordinates = Iterables.concat(allCoords);
+            } catch (UncheckedIOException e) {
                 getLogger().warning("File not found " + args[0]);
                 return false;
             }
-            new RenderTask(this, player, reader).runTaskAsynchronously(this);
+            Vector scale = scaleFromArgs(args);
+            new RenderTask(this, player, coordinates, scale).runTaskAsynchronously(this);
             return true;
         }
         return false;
+    }
+
+    private static Vector scaleFromArgs(String[] args) {
+        Vector scale = new Vector(1, 1, 1);
+        if (args.length > 1) {
+            try {
+                scale.setX(Double.parseDouble(args[1]));
+            } catch (NumberFormatException e) {
+                // ignore
+            }
+        }
+        if (args.length > 2) {
+            try {
+                scale.setY(Double.parseDouble(args[2]));
+            } catch (NumberFormatException e) {
+                // ignore
+            }
+        }
+        if (args.length > 3) {
+            try {
+                scale.setZ(Double.parseDouble(args[3]));
+            } catch (NumberFormatException e) {
+                // ignore
+            }
+        }
+        return scale;
     }
 }
