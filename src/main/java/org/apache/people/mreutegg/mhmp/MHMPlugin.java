@@ -18,10 +18,13 @@ package org.apache.people.mreutegg.mhmp;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.io.Closer;
 import com.google.common.io.PatternFilenameFilter;
+import org.apache.people.mreutegg.mhmp.zh.ZHGenerator;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
@@ -33,6 +36,8 @@ import java.util.List;
 import static com.google.common.collect.Iterables.transform;
 
 public class MHMPlugin extends JavaPlugin {
+
+    private final Closer closer = Closer.create();
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -97,5 +102,25 @@ public class MHMPlugin extends JavaPlugin {
             }
         }
         return scale;
+    }
+
+    @Override
+    public void onDisable() {
+        try {
+            closer.close();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    @Override
+    public ChunkGenerator getDefaultWorldGenerator(String worldName, String id) {
+        try {
+            ZHGenerator generator = new ZHGenerator(getLogger());
+            closer.register(generator);
+            return generator;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 }

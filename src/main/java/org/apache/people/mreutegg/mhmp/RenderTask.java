@@ -139,7 +139,7 @@ public class RenderTask extends BukkitRunnable {
         });
     }
 
-    private static Location diveForDirtOrGrass(Location loc) {
+    public static Location diveForDirtOrGrass(Location loc) {
         Location l = loc.clone();
         for (int i = 0; i < 20; i++) {
             Material m = l.subtract(0, 1, 0).getBlock().getType();

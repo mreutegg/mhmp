@@ -46,7 +46,7 @@ public class Coordinate {
         this(x, y, z, LidarClassification.GROUND);
     }
 
-    private Coordinate(double x, double y, double z, int k) {
+    public Coordinate(double x, double y, double z, int k) {
         this.x = x;
         this.y = y;
         this.z = z;
