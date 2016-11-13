@@ -116,7 +116,7 @@ public class MHMPlugin extends JavaPlugin {
     @Override
     public ChunkGenerator getDefaultWorldGenerator(String worldName, String id) {
         try {
-            ZHGenerator generator = new ZHGenerator(getLogger());
+            ZHGenerator generator = new ZHGenerator(this);
             closer.register(generator);
             return generator;
         } catch (IOException e) {

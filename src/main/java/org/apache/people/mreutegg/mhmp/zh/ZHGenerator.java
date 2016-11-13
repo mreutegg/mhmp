@@ -17,6 +17,7 @@
 package org.apache.people.mreutegg.mhmp.zh;
 
 import org.apache.people.mreutegg.mhmp.Coordinate;
+import org.apache.people.mreutegg.mhmp.MHMPlugin;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.generator.BlockPopulator;
@@ -24,12 +25,16 @@ import org.bukkit.generator.ChunkGenerator;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -37,12 +42,16 @@ import java.util.logging.Logger;
 
 public class ZHGenerator extends ChunkGenerator implements Closeable {
 
+    private static final String OFFSET_PROPS = "offset.properties";
+
     private static final int DEFAULT_SPAWN_X = 2696836;
 
     private static final int DEFAULT_SPAWN_Y = 1261767;
 
     private static final String SPAWN = System.getProperty("spawn",
             DEFAULT_SPAWN_X + "/" + DEFAULT_SPAWN_Y);
+
+    private final MHMPlugin plugin;
 
     private final Logger logger;
 
@@ -54,11 +63,13 @@ public class ZHGenerator extends ChunkGenerator implements Closeable {
 
     private int zOffset = -1;
 
-    public ZHGenerator(Logger logger) throws IOException {
-        this.logger = logger;
+    public ZHGenerator(MHMPlugin plugin) throws IOException {
+        this.plugin = plugin;
+        this.logger = plugin.getLogger();
         this.executor = Executors.newWorkStealingPool();
-        this.repo = new ASCRepository(new File("downloaded"), logger);
-        this.populator = new ZHBlockPopulator(executor, logger, () -> zOffset);
+        this.repo = new ASCRepository(plugin.getDataFolder(), logger);
+        this.populator = new ZHBlockPopulator(plugin.getDataFolder(),
+                executor, logger, () -> zOffset);
     }
 
     @Override
@@ -73,7 +84,7 @@ public class ZHGenerator extends ChunkGenerator implements Closeable {
                     int blockZ = minZ + z;
                     Tile tile = repo.getTile(blockX, -blockZ);
                     int y = tile.getZ(blockX, -blockZ);
-                    y -= getZOffset(y);
+                    y -= getZOffset(world, y);
                     y = Math.min(Math.max(y , 0), 255);
                     short k = tile.getClassification(blockX, -blockZ);
                     Coordinate c = new Coordinate(blockX, -blockZ, y, k);
@@ -119,10 +130,31 @@ public class ZHGenerator extends ChunkGenerator implements Closeable {
         return (x * 16 + z) * 256 + y;
     }
 
-    private int getZOffset(int z) {
+    private int getZOffset(World world, int z) {
         if (zOffset == -1) {
-            // calculate offset for the first time based on passed z
-            zOffset = Math.max(0, z - 50);
+            Properties props = new Properties();
+            File f = new File(plugin.getDataFolder(), OFFSET_PROPS);
+            if (f.exists()) {
+                try (InputStream in = new FileInputStream(f)) {
+                    props.load(in);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
+            Object v = props.get(world.getUID().toString());
+            if (v == null) {
+                // calculate offset for the first time based on passed z
+                zOffset = Math.max(0, z - 50);
+                // and store it
+                props.put(world.getUID().toString(), String.valueOf(zOffset));
+                try (OutputStream out = new FileOutputStream(f)) {
+                    props.store(out, null);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            } else {
+                zOffset = Integer.parseInt(v.toString());
+            }
         }
         return zOffset;
     }

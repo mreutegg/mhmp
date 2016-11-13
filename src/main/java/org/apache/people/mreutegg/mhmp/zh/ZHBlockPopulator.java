@@ -30,7 +30,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Random;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -43,9 +42,9 @@ class ZHBlockPopulator extends BlockPopulator {
 
     private Supplier<Integer> zOffset;
 
-    ZHBlockPopulator(ExecutorService executor, Logger logger, Supplier<Integer> zOffset) throws IOException {
+    ZHBlockPopulator(File dataDir, ExecutorService executor, Logger logger, Supplier<Integer> zOffset) throws IOException {
         this.logger = logger;
-        this.repo = new LidarRepository(new File("downloaded"), executor, logger);
+        this.repo = new LidarRepository(dataDir, executor, logger);
         this.zOffset = zOffset;
     }
 
@@ -81,7 +80,21 @@ class ZHBlockPopulator extends BlockPopulator {
                     } else if (c.getMaterial() == Material.GRASS) {
                         b.setType(c.getMaterial());
                     } else if (c.getMaterial() == Material.LEAVES) {
-                        world.generateTree(RenderTask.diveForDirtOrGrass(b.getLocation()), TreeType.TREE);
+                        Location ground = RenderTask.diveForDirtOrGrass(b.getLocation());
+                        int height = (int) ground.distance(b.getLocation());
+                        TreeType type = null;
+                        if (height > 24) {
+                            type = TreeType.MEGA_REDWOOD;
+                        } else if (height > 9) {
+                            type = TreeType.BIG_TREE;
+                        } else if (height > 5) {
+                            type = TreeType.TREE;
+                        } else if (height > 1) {
+                            type = TreeType.JUNGLE_BUSH;
+                        }
+                        if (type != null) {
+                            world.generateTree(ground, type);
+                        }
                     } else {
                         Location loc = b.getLocation();
                         for (int i = 0; i < 3; i++) {
@@ -95,7 +108,7 @@ class ZHBlockPopulator extends BlockPopulator {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        logger.info("Populated chunk at " + chunkX + "/" + chunkZ);
+        logger.fine("Populated chunk at " + chunkX + "/" + chunkZ);
     }
 
     private void stoneUntilDirt(Block b) {
