@@ -19,3 +19,6 @@ commands:
   render:
     description: Render a height model in Minecraft
     usage: /render <height-model>.xyz
+  whereami:
+    description: Tells you where you are
+    usage: /whereami

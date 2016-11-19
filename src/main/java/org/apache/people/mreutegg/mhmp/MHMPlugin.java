@@ -16,92 +16,23 @@
  */
 package org.apache.people.mreutegg.mhmp;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
-import com.google.common.io.PatternFilenameFilter;
+import org.apache.people.mreutegg.mhmp.zh.WhereAmICommandExecutor;
 import org.apache.people.mreutegg.mhmp.zh.ZHGenerator;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.Vector;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.List;
-
-import static com.google.common.collect.Iterables.transform;
 
 public class MHMPlugin extends JavaPlugin {
 
     private final Closer closer = Closer.create();
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            return false;
-        }
-        Player player = (Player) sender;
-        if (command.getName().equalsIgnoreCase("render")) {
-            if (args.length < 1) {
-                sender.sendMessage("You need to specify a .xyz file.");
-                return false;
-            }
-            Iterable<Coordinate> coordinates;
-            try {
-                List<File> files = Lists.newArrayList(new File(".").listFiles(
-                        new PatternFilenameFilter(args[0])));
-                Iterable<Iterable<Coordinate>> allCoords = transform(
-                        files, file -> {
-                            try {
-                                if (file.getName().endsWith(".asc")) {
-                                    return ASCReader.fromFile(file);
-                                } else {
-                                    return CoordinateReader.fromFile(file);
-                                }
-                            } catch (IOException e) {
-                                throw new UncheckedIOException(e);
-                            }
-                        });
-                coordinates = Iterables.concat(allCoords);
-            } catch (UncheckedIOException e) {
-                getLogger().warning("File not found " + args[0]);
-                return false;
-            }
-            Vector scale = scaleFromArgs(args);
-            new RenderTask(this, player, coordinates, scale).runTaskAsynchronously(this);
-            return true;
-        }
-        return false;
-    }
-
-    private static Vector scaleFromArgs(String[] args) {
-        Vector scale = new Vector(1, 1, 1);
-        if (args.length > 1) {
-            try {
-                scale.setX(Double.parseDouble(args[1]));
-            } catch (NumberFormatException e) {
-                // ignore
-            }
-        }
-        if (args.length > 2) {
-            try {
-                scale.setY(Double.parseDouble(args[2]));
-            } catch (NumberFormatException e) {
-                // ignore
-            }
-        }
-        if (args.length > 3) {
-            try {
-                scale.setZ(Double.parseDouble(args[3]));
-            } catch (NumberFormatException e) {
-                // ignore
-            }
-        }
-        return scale;
+    public void onEnable() {
+        this.getCommand("render").setExecutor(new RenderCommandExecutor(this));
+        this.getCommand("whereami").setExecutor(new WhereAmICommandExecutor());
     }
 
     @Override
