@@ -1,54 +1,63 @@
 Minecraft Height Model Plugin
 =============================
 
-This is a plugin for the Bukkit Minecraft Mod and allows you to generate
-a terrain in Minecraft from a height model file with X/Y/Z coordinates.
+This is a plugin for the Bukkit Minecraft Mod and contains a `ChunkGenerator`
+that models the Canton of Zurich in Minecraft including buildings and trees.
 
-A free [height model of Switzerland](http://data.geo.admin.ch/ch.swisstopo.digitales-hoehenmodell_25/data.zip)
-is available via [opendata.swiss](https://opendata.swiss/en/dataset/das-digitale-hohenmodell-der-schweiz-mit-einer-maschenweite-von-200-m1).
+The plugin automatically downloads the required digital terrain model (DTM)
+from [GIS-ZH](http://maps.zh.ch/download/hoehen/2014/dtm/xyz/).
 
 Installation
 ------------
 
-1) Build this plugin with Apache Maven:
+1. Build this plugin with Apache Maven:
 
 ```
 > mvn clean install
 ```
 
-2) Build a CraftBukkit Minecraft server mod. Instructions are available on
+2. Build a CraftBukkit Minecraft server mod. Instructions are available on
 [spigotmc.org](https://www.spigotmc.org/wiki/buildtools/)
-3) Copy `craftbukkit.jar` built by spigotmc to a directory where you will run
+3. Copy `craftbukkit.jar` built by spigotmc to a directory where you will run
 the server. E.g. `craftbukkit`.
-4) Create a sub directory `craftbukkit/plugins` and copy the mhmp plugin jar
+4. Start the server for the first time with:
+```
+> java -Xmx2g -jar craftbukkit.jar
+```
+5. The server will stop after a short while and tell you to accept the EULA.
+6. Once you have done that, start the server again. It will create a new world
+and write a set of configuration files.
+7. Stop the server
+8. Create a sub directory `craftbukkit/plugins` and copy the mhmp plugin jar
 into this directory.
-5) Copy the file `src/test/resources/server.properties` to the
-`craftbukkit` folder. It contains a few changes to the default values to
-generate a flat world.
-6) Start the server for the first time with:
+9. Copy the file `src/test/resources/server.properties` to the
+`craftbukkit` folder. It contains a few changes to the default values.
+10. Open the file `bukkit.yml` with a text editor and add the following lines
+at the end. It will tell the server to use the chunk generator from the plugin
+instead of the default minecraft one.
 ```
-> java -Xmx1g -jar craftbukkit.jar
+worlds:
+  world:
+    generator: Minecraft-Height-Model-Plugin
 ```
-7) The server will stop after a short while and tell you to accept the EULA.
-8) Once you have done that, start the server again.
-9) Download the [swiss height model](http://data.geo.admin.ch/ch.swisstopo.digitales-hoehenmodell_25/data.zip)
-and put the DHM200.xyz file into `craftbukkit`.
-10) Start a Minecraft client and connect to the server (Multiplayer->Direct Connect).
+11. Delete the world initialized by the previous startup:
+```
+> rm -r world*
+```
+12. Start the server with the plugin and the laszip4j dependency:
+```
+> java -Xmx2g -cp $HOME/.m2/repository/com/github/mreutegg/laszip4j/0.1/laszip4j-0.1.jar:craftbukkit-1.11.jar org.bukkit.craftbukkit.Main
+```
+13. Start a Minecraft client and connect to the server (Multiplayer->Direct Connect).
 Use `localhost` as server address.
-11) Render the height model with:
-```
-/render DHM200.xyz 200 100 200
-```
-It will take about 20 minutes to render the full terrain of Switzerland. The
-terrain is scaled down. Each block in Minecraft represents 200x200 meters with
-a height of 100 meters. This means the example terrain in Minecraft appears
-twice as high as in reality.
-In case you are wondering where the current location of the player is when the
-rendering starts. It's [here](https://www.google.ch/maps/@47.8661649,8.1736558,14z?hl=en)
-(yes, that's in Germany). The plugin simply takes the first coordinates and
-starts building at the current location of the player.
 
-And here is how it looks like, standing on top of Säntis, looking south. The
-valley to the left is Rheintal.
+The default spawn point is outside the railway station of Winterthur.
 
-![Säntis](screenshot.png)
+If you want to spawn at another place, remove the world and add a `spawn` system
+property to the command that starts the server. The following default spawn
+point is in the city of Zurich on the terrace of ETH.
+```
+> java -Dspawn=2683677/1247844 -Xmx2g -cp $HOME/.m2/repository/com/github/mreutegg/laszip4j/0.1/laszip4j-0.1.jar:craftbukkit-1.11.jar org.bukkit.craftbukkit.Main
+```
+And if you fly up a bit the view is like this:
+![ETH Zurich](screenshot.png)
