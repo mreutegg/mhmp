@@ -46,7 +46,7 @@ abstract class TileRepository {
         this.baseURL = baseURL;
         this.downloaded = mkdirs(dir);
         this.tileCache = CacheBuilder.newBuilder()
-                .maximumSize(4).build();
+                .maximumSize(16).build();
     }
 
     abstract protected int getTileWidth();
