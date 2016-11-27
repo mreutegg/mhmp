@@ -50,7 +50,12 @@ class ASCRepository extends TileRepository {
                         ASCReader.fromFile(asc));
             });
         } catch (ExecutionException e) {
-            throw new IOException(e.getCause());
+            tileCache.put(asc.getAbsolutePath(), Tile.NULL);
+            if (e.getCause() instanceof IOException) {
+                throw (IOException) e.getCause();
+            } else {
+                throw new IOException(e.getCause());
+            }
         }
     }
 }

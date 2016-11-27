@@ -83,19 +83,21 @@ public class ZHGenerator extends ChunkGenerator implements Closeable {
                     int blockX = minX + x;
                     int blockZ = minZ + z;
                     Tile tile = repo.getTile(blockX, -blockZ);
-                    int y = tile.getZ(blockX, -blockZ);
-                    y -= getZOffset(world, y);
-                    y = Math.min(Math.max(y , 0), 255);
-                    short k = tile.getClassification(blockX, -blockZ);
-                    Coordinate c = new Coordinate(blockX, -blockZ, y, k);
-                    for (int i = 0; i < 5; i++) {
-                        result[xyzToByte(x,y,z)] = (byte) c.getMaterial().getId();
-                        y = Math.max(--y, 0);
+                    if (tile != null) {
+                        int y = tile.getZ(blockX, -blockZ);
+                        y -= getZOffset(world, y);
+                        y = Math.min(Math.max(y , 0), 255);
+                        short k = tile.getClassification(blockX, -blockZ);
+                        Coordinate c = new Coordinate(blockX, -blockZ, y, k);
+                        for (int i = 0; i < 5; i++) {
+                            result[xyzToByte(x,y,z)] = (byte) c.getMaterial().getId();
+                            y = Math.max(--y, 0);
+                        }
                     }
                 }
             }
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            logger.warning(e.toString());
         }
         logger.fine("Generated chunk at " + chunkX + "/" + chunkZ);
         return result;

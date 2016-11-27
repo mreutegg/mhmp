@@ -56,7 +56,11 @@ abstract class TileRepository {
     Tile getTile(int x, int y) throws IOException {
         int minX = getTileMin(x);
         int minY = getTileMin(y);
-        return readTile(minX, minY);
+        Tile t = readTile(minX, minY);
+        if (t == Tile.NULL) {
+            t = null;
+        }
+        return t;
     }
 
     String nameFromCoordinate(int x, int y) {

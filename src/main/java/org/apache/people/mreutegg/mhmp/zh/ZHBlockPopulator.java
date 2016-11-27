@@ -62,6 +62,9 @@ class ZHBlockPopulator extends BlockPopulator {
                     int blockX = minX + x;
                     int blockZ = minZ + z;
                     Tile tile = repo.getTile(blockX, -blockZ);
+                    if (tile == null) {
+                        continue;
+                    }
                     int y = tile.getZ(blockX, -blockZ) - zOffset.get();
                     if (y < 0 || y > 255) {
                         continue;
@@ -106,7 +109,7 @@ class ZHBlockPopulator extends BlockPopulator {
                 }
             }
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            logger.warning(e.toString());
         }
         logger.fine("Populated chunk at " + chunkX + "/" + chunkZ);
     }

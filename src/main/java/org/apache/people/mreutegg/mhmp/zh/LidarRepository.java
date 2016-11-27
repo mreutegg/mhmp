@@ -17,13 +17,11 @@
 package org.apache.people.mreutegg.mhmp.zh;
 
 import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.Futures;
 import org.apache.people.mreutegg.mhmp.CoordinateReader;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
@@ -52,14 +50,19 @@ class LidarRepository extends TileRepository {
         File xyzc = new File(downloaded, name + ".xyzc");
         try {
             return tileCache.get(xyzc.getAbsolutePath(), () -> {
-                Futures.get(downloadAndUnpack(name), IOException.class);
+                downloadAndUnpack(name).get();
                 triggerDownloadAround(minX, minY);
                 log.info("Reading Tile into memory (" + name + ")");
                 return new MemoryTile(minX, minY,
                         CoordinateReader.fromFile(xyzc));
             });
-        } catch (ExecutionException e) {
-            throw new IOException(e.getCause());
+        } catch (Throwable e) {
+            tileCache.put(xyzc.getAbsolutePath(), Tile.NULL);
+            if (e.getCause() instanceof IOException) {
+                throw (IOException) e.getCause();
+            } else {
+                throw new IOException(e.getCause());
+            }
         }
     }
 

@@ -18,11 +18,33 @@ package org.apache.people.mreutegg.mhmp.zh;
 
 public interface Tile {
 
-    public int getMinX();
+    Tile NULL = new Tile() {
+        @Override
+        public int getMinX() {
+            throw new UnsupportedOperationException();
+        }
 
-    public int getMinY();
+        @Override
+        public int getMinY() {
+            throw new UnsupportedOperationException();
+        }
 
-    public int getZ(int x, int y);
+        @Override
+        public int getZ(int x, int y) {
+            throw new UnsupportedOperationException();
+        }
 
-    public short getClassification(int x, int y);
+        @Override
+        public short getClassification(int x, int y) {
+            throw new UnsupportedOperationException();
+        }
+    };
+
+    int getMinX();
+
+    int getMinY();
+
+    int getZ(int x, int y);
+
+    short getClassification(int x, int y);
 }
