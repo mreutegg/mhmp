@@ -17,7 +17,6 @@
 package org.apache.people.mreutegg.mhmp;
 
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Iterators;
 
 import java.io.BufferedReader;
 import java.io.EOFException;
@@ -28,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -94,7 +94,7 @@ public class ASCReader implements Iterable<Coordinate> {
 
             return new AbstractIterator<Coordinate>() {
                 final Iterator<String> zLines = lines.iterator();
-                Iterator<Double> zValues = Iterators.emptyIterator();
+                Iterator<Double> zValues = Collections.emptyIterator();
                 int lineCounter = -1;
                 int rowCounter = -1;
                 @Override
