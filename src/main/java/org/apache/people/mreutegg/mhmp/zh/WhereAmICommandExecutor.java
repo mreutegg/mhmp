@@ -18,14 +18,15 @@ package org.apache.people.mreutegg.mhmp.zh;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 import java.awt.Point;
 import java.io.BufferedInputStream;
@@ -74,24 +75,24 @@ public class WhereAmICommandExecutor implements CommandExecutor {
             Map<Point, String> map = Maps.newHashMap();
             try (InputStream in = new BufferedInputStream(
                     WhereAmICommandExecutor.class.getResourceAsStream("locations.json"))) {
-                JSONParser parser = new JSONParser();
-                JSONObject obj = (JSONObject) parser.parse(new InputStreamReader(in, Charsets.UTF_8));
-                JSONArray features = (JSONArray) obj.get("features");
-                for (Object element : features) {
-                    JSONObject feature = (JSONObject) element;
-                    JSONObject props = (JSONObject) feature.get("properties");
+                JsonParser parser = new JsonParser();
+                JsonElement obj = parser.parse(new InputStreamReader(in, Charsets.UTF_8));
+                JsonArray features = obj.getAsJsonObject().getAsJsonArray("features");
+                for (JsonElement element : features) {
+                    JsonObject feature = element.getAsJsonObject();
+                    JsonObject props = feature.getAsJsonObject("properties");
                     StringBuilder location = new StringBuilder();
-                    String town = String.valueOf(props.get("siedlungen"));
+                    String town = props.get("siedlungen").getAsString();
                     location.append(town);
-                    String district = String.valueOf(props.get("quartiere"));
+                    String district = props.get("quartiere").getAsString();
                     if (!town.equals(district)) {
                         location.append(" / ");
                         location.append(district);
                     }
-                    JSONObject geo = (JSONObject) feature.get("geometry");
-                    JSONArray coords = (JSONArray) geo.get("coordinates");
-                    int x = ((Number) coords.get(0)).intValue();
-                    int y = ((Number) coords.get(1)).intValue();
+                    JsonObject geo = feature.getAsJsonObject("geometry");
+                    JsonArray coords = geo.getAsJsonArray("coordinates");
+                    int x = coords.get(0).getAsInt();
+                    int y = coords.get(1).getAsInt();
                     map.put(new Point(x, y), location.toString());
                 }
             }

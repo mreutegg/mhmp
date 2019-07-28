@@ -105,7 +105,7 @@ public class RenderTask extends BukkitRunnable {
             for (Map.Entry<Location, Material> entry : locs.entrySet()) {
                 Location loc = entry.getKey().clone();
                 Material m = entry.getValue();
-                if (m == Material.LEAVES) {
+                if (m == Material.LEGACY_LEAVES) {
                     loc.getWorld().generateTree(diveForDirtOrGrass(loc), TreeType.TREE);
                 } else if (m == Material.STONE) {
                     // at most 20 blocks deep until we hit dirt
@@ -118,7 +118,7 @@ public class RenderTask extends BukkitRunnable {
                             break;
                         }
                     }
-                } else if (m == Material.LONG_GRASS) {
+                } else if (m == Material.TALL_GRASS) {
                     Block block = loc.getBlock();
                     if (block.getType() != Material.AIR) {
                         // put grass one block higher

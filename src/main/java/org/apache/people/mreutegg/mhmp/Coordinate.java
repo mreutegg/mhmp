@@ -63,9 +63,9 @@ public class Coordinate {
         if (k == LidarClassification.LOW_VEGETATION) {
             m = Material.GRASS;
         } else if (k == LidarClassification.MEDIUM_VEGETATION) {
-            m = Material.LONG_GRASS;
+            m = Material.TALL_GRASS;
         } else if (k == LidarClassification.HIGH_VEGETATION) {
-            m = Material.LEAVES;
+            m = Material.OAK_LEAVES;
         } else if (k == LidarClassification.BUILDING) {
             m = Material.STONE;
         } else if (k == LidarClassification.LOW_POINT) {
@@ -73,7 +73,7 @@ public class Coordinate {
         } else if (k == LidarClassification.WATER) {
             m = Material.WATER;
         } else if (k == LidarClassification.RAIL) {
-            m = Material.RAILS;
+            m = Material.RAIL;
         } else if (k == LidarClassification.ROAD_SURFACE) {
             m = Material.GRAVEL;
         } else {

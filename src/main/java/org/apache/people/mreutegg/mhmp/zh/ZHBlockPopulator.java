@@ -26,11 +26,8 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.generator.BlockPopulator;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
@@ -42,9 +39,9 @@ class ZHBlockPopulator extends BlockPopulator {
 
     private Supplier<Integer> zOffset;
 
-    ZHBlockPopulator(File dataDir, ExecutorService executor, Logger logger, Supplier<Integer> zOffset) throws IOException {
+    ZHBlockPopulator(LidarRepository repo, Logger logger, Supplier<Integer> zOffset) {
         this.logger = logger;
-        this.repo = new LidarRepository(dataDir, executor, logger);
+        this.repo = repo;
         this.zOffset = zOffset;
     }
 
@@ -72,17 +69,7 @@ class ZHBlockPopulator extends BlockPopulator {
                     short k = tile.getClassification(blockX, -blockZ);
                     Coordinate c = new Coordinate(blockX, -blockZ, y, k);
                     Block b = chunk.getBlock(x, y, z);
-                    if (c.getMaterial() == Material.STONE) {
-                        stoneUntilDirt(b);
-                    } else if (c.getMaterial() == Material.LONG_GRASS) {
-                        if (b.getType() != Material.AIR) {
-                            // put grass one block higher
-                            b = b.getLocation().add(0, 1, 0).getBlock();
-                        }
-                        b.setType(c.getMaterial());
-                    } else if (c.getMaterial() == Material.GRASS) {
-                        b.setType(c.getMaterial());
-                    } else if (c.getMaterial() == Material.LEAVES) {
+                    if (c.getMaterial() == Material.OAK_LEAVES) {
                         Location ground = RenderTask.diveForDirtOrGrass(b.getLocation());
                         int height = (int) ground.distance(b.getLocation());
                         TreeType type = null;
@@ -98,13 +85,6 @@ class ZHBlockPopulator extends BlockPopulator {
                         if (type != null) {
                             world.generateTree(ground, type);
                         }
-                    } else {
-                        Location loc = b.getLocation();
-                        for (int i = 0; i < 3; i++) {
-                            Block block = loc.getBlock();
-                            block.setType(c.getMaterial());
-                            loc.subtract(0, 1, 0);
-                        }
                     }
                 }
             }
@@ -113,17 +93,4 @@ class ZHBlockPopulator extends BlockPopulator {
         }
         logger.fine("Populated chunk at " + chunkX + "/" + chunkZ);
     }
-
-    private void stoneUntilDirt(Block b) {
-        while (b.getType() != Material.DIRT) {
-            b.setType(Material.STONE);
-            Location loc = b.getLocation();
-            if (loc.getBlockY() <= 0) {
-                break;
-            }
-            b = b.getLocation().subtract(0, 1, 0).getBlock();
-        }
-    }
-
-
 }
